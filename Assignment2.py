@@ -41,7 +41,25 @@ def Euler(position,velocity,t_array):
         velocity = velocity + dt * a(position)
     return pos_list,vel_list
 
-positions, velocities = Euler(position,velocity,t_list)
+def Verlet(position,velocity,t_array):
+    pos_list = [position]
+    vel_list = [velocity]
+    #integrate to find position
+    for i in range(len(t_array)-1):
+        if i == 0:
+            position = position + dt * velocity
+        else:
+            position= 2*pos_list[i]-pos_list[i-1]+dt**2*a(position)
+        pos_list.append(position)
+    #integrate for velocity
+    for i in range(len(t_array)-1):
+        if i == 0:
+            velocity = velocity + dt * a(position)
+        else:
+            velocity= 1/(2*dt)*(pos_list[i+1]-pos_list[i-1])
+        vel_list.append(velocity)
+    return pos_list, vel_list
+positions, velocities = Verlet(position,velocity,t_list)
 positions = np.array(positions)
 
 
