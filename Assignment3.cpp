@@ -23,8 +23,8 @@ int main() {
     // Verlet integration for x
     //intitalize counter
     int i = 0;
-    x_list.push_back(x);
     for (t = 0; t <= t_max; t = t + dt) {
+        x_list.push_back(x);
         t_list.push_back(t);
         a = -k * x / m;
         if (i == 0) {
@@ -35,14 +35,14 @@ int main() {
         }
        
         // append current state to trajectories
-        x_list.push_back(x);
         // increment internal counter
         i++;
     }
 
     //Verlet Integration for v
-    v_list.push_back(v);
-    for (i = 0; i <= t_list.size()-1; i++) {
+   
+    for (i = 0; i <= t_list.size(); i++) {
+        v_list.push_back(v);
         if (i == 0){
             v = v + dt * a;
         }
@@ -50,7 +50,6 @@ int main() {
             v = 1 / (2 * dt) * (x_list[i + 1] - x_list[i - 1]);
         }
 
-        v_list.push_back(v);
     }
 
 
