@@ -13,6 +13,7 @@
 // ahg@eng.cam.ac.uk and gc121@eng.cam.ac.uk.
 
 #include "lander.h"
+#include <math.h>
 
 void autopilot (void)
   // Autopilot to adjust the engine throttle, parachute and attitude control
@@ -20,11 +21,33 @@ void autopilot (void)
   // INSERT YOUR CODE HERE
 }
 
+//functions for acceleration calculations
+
+vector3d gravacc(vector3d pos){
+
+    return - pos.norm()*(GRAVITY * MARS_MASS / pos.abs2());
+}
+
+vector3d dragacc(vector3d vel,vector3d pos,  bool chute) {
+    if (chute == NOT_DEPLOYED)
+        //assume the diameter of the lander to be 1m and projected area of parachute as negligible for lack of better info
+        //pi is taken from maths.h
+        return -vel.norm() * (0.5 * (atmospheric_density(pos) * DRAG_COEF_LANDER * (M_PI * pow(LANDER_SIZE / 2, 2)) * vel.abs2()));
+    else {
+    //may need to adjust some constants later to account for the area of the chute
+        return -vel.norm() * (0.5 * (atmospheric_density(pos) * (DRAG_COEF_LANDER + DRAG_COEF_CHUTE) * (M_PI * pow(LANDER_SIZE / 2, 2)) * vel.abs2()));
+    }
+}
+
 void numerical_dynamics (void)
   // This is the function that performs the numerical integration to update the
   // lander's pose. The time step is delta_t (global variable).
 {
   // INSERT YOUR CODE HERE
+  //Note thrust_wrt_world takes no arguments and returns the the current thrust, defined in lander_graphics.cpp
+  //gonna use verlet integrator here as not a fan of Euler as it tends to overshoot
+    
+
 
   // Here we can apply an autopilot to adjust the thrust, parachute and attitude
   if (autopilot_enabled) autopilot();
