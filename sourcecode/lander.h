@@ -166,7 +166,7 @@ unsigned long long time_program_started;
 
 // Lander state - the visualization routines use velocity_from_positions, so not sensitive to 
 // any errors in the velocity update in numerical_dynamics
-vector3d position, orientation, velocity, velocity_from_positions, last_position;
+vector3d position, orientation, velocity, velocity_from_positions, last_position,last_pos,last_pos2;
 double climb_speed, ground_speed, altitude, throttle, fuel;
 bool stabilized_attitude, autopilot_enabled, parachute_lost;
 parachute_status_t parachute_status;
@@ -189,7 +189,7 @@ extern bool stabilized_attitude, autopilot_enabled;
 extern double delta_t, simulation_time, throttle, fuel;
 extern unsigned short scenario;
 extern string scenario_description[];
-extern vector3d position, orientation, velocity;
+extern vector3d position, orientation, velocity,last_pos,last_pos2;
 extern parachute_status_t parachute_status;
 extern int stabilized_attitude_angle;
 

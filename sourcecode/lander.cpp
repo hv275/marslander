@@ -14,7 +14,7 @@
 
 #include "lander.h"
 #include <math.h>
-
+#include <vector>
 void autopilot (void)
   // Autopilot to adjust the engine throttle, parachute and attitude control
 {
@@ -28,14 +28,14 @@ vector3d gravacc(vector3d pos){
     return - pos.norm()*(GRAVITY * MARS_MASS / pos.abs2());
 }
 
-vector3d dragacc(vector3d vel,vector3d pos,  bool chute) {
-    if (chute == NOT_DEPLOYED)
+vector3d dragacc(vector3d vel,vector3d pos,  parachute_status_t chute) {
+    if (chute == DEPLOYED)
         //assume the diameter of the lander to be 1m and projected area of parachute as negligible for lack of better info
         //pi is taken from maths.h
-        return -vel.norm() * (0.5 * (atmospheric_density(pos) * DRAG_COEF_LANDER * (M_PI * pow(LANDER_SIZE / 2, 2)) * vel.abs2()));
+        return - vel.norm() * (0.5 * (atmospheric_density(pos) * (DRAG_COEF_LANDER + DRAG_COEF_CHUTE) * (M_PI * pow(LANDER_SIZE, 2)) * vel.abs2()))/ (UNLOADED_LANDER_MASS + FUEL_DENSITY * fuel);
     else {
     //may need to adjust some constants later to account for the area of the chute
-        return -vel.norm() * (0.5 * (atmospheric_density(pos) * (DRAG_COEF_LANDER + DRAG_COEF_CHUTE) * (M_PI * pow(LANDER_SIZE / 2, 2)) * vel.abs2()));
+        return - vel.norm() * (0.5 * (atmospheric_density(pos) * DRAG_COEF_LANDER * (M_PI * pow(LANDER_SIZE, 2)) * vel.abs2()))/(UNLOADED_LANDER_MASS+FUEL_DENSITY*FUEL_CAPACITY);
     }
 }
 
@@ -45,9 +45,21 @@ void numerical_dynamics (void)
 {
   // INSERT YOUR CODE HERE
   //Note thrust_wrt_world takes no arguments and returns the the current thrust, defined in lander_graphics.cpp
-  //gonna use verlet integrator here as not a fan of Euler as it tends to overshoot
-    
-
+  //my approach avoids using arrays to simplify the algorithm but it will cost accuracy for the approximation of velocity
+  //NOTE: looping is already built into the code but need it for arrays anyway
+  //some VERY DODGY variable usage imbound so I can avoid using lists, optimise at the end with an array
+    if (simulation_time <= 0.1) {
+        last_pos = position;
+        position = position + velocity * delta_t;
+        velocity = velocity + delta_t * (gravacc(position) + dragacc(velocity, position, parachute_status) + thrust_wrt_world()/UNLOADED_LANDER_MASS);
+        last_pos2 = last_pos;
+    }
+    else {
+        last_pos = position;
+        position = 2 * position - last_pos2 + pow(delta_t, 2) * (gravacc(position) + dragacc(velocity, position, parachute_status) + thrust_wrt_world()/UNLOADED_LANDER_MASS);
+        velocity = (position - last_pos)/delta_t;
+        last_pos2 = last_pos;
+    }
 
   // Here we can apply an autopilot to adjust the thrust, parachute and attitude
   if (autopilot_enabled) autopilot();
