@@ -197,6 +197,7 @@ extern int stabilized_attitude_angle;
 
 // Function prototypes
 void invert (double m[], double mout[]);
+double alt(vector3d poss);
 void xyz_euler_to_matrix (vector3d ang, double m[]);
 vector3d matrix_to_xyz_euler (double m[]);
 void normalize_quat (quat_t &q);
@@ -246,3 +247,4 @@ void closeup_mouse_button (int button, int state, int x, int y);
 void closeup_mouse_motion (int x, int y);
 void glut_special (int key, int x, int y);
 void glut_key (unsigned char k, int x, int y);
+

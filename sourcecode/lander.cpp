@@ -11,14 +11,38 @@
 // exercise for future generations of students. The authors would be happy
 // to receive any suggested modifications by private correspondence to
 // ahg@eng.cam.ac.uk and gc121@eng.cam.ac.uk.
-
 #include "lander.h"
 #include <math.h>
 #include <vector>
 void autopilot (void)
   // Autopilot to adjust the engine throttle, parachute and attitude control
-{
-  // INSERT YOUR CODE HERE
+{   //initialise constants
+    float K_h, K_p,e,P_o;
+    //adjust by trial and error
+    //K_h adjusts how long we wait until the thrusters kick/how high acceleration we want
+    K_h = 0.03;
+    K_p = 0.5;
+    e = -(0.5 + K_h * alt(position) + velocity * position.norm());
+    P_o = K_p * e;
+    float Delta = 0.05;
+    if (P_o < -Delta) {
+        throttle = 0;
+    }
+    else if (-Delta < P_o < 1 - Delta) {
+        throttle = Delta + P_o;
+    }
+    else {
+        throttle = 1;
+    }
+    //following code outputs raw data for investigation and visualisation (Used MATLAB cause quicker)
+    ofstream fout;
+    fout.open("trajectories.txt", std::ofstream::app);
+    if (fout) { // file opened successfully
+        fout << alt(position) << ' ' << velocity * position.norm() << endl;
+    }
+    else { // file did not open successfully
+        cout << "Could not open trajectory file for writing" << endl;
+    }
 }
 
 //functions for acceleration calculations
@@ -32,11 +56,15 @@ vector3d dragacc(vector3d vel,vector3d pos,  parachute_status_t chute) {
     if (chute == DEPLOYED)
         //assume the diameter of the lander to be 1m and projected area of parachute as negligible for lack of better info
         //pi is taken from maths.h
-        return - vel.norm() * (0.5 * (atmospheric_density(pos) * (DRAG_COEF_LANDER + DRAG_COEF_CHUTE) * (M_PI * pow(LANDER_SIZE, 2)) * vel.abs2()))/ (UNLOADED_LANDER_MASS + FUEL_DENSITY * fuel);
+        return - vel.norm() * (0.5 * (atmospheric_density(pos) * (DRAG_COEF_LANDER + DRAG_COEF_CHUTE) * (M_PI * pow(LANDER_SIZE, 2)+5*2*LANDER_SIZE) * vel.abs2()))/ (UNLOADED_LANDER_MASS + FUEL_DENSITY * fuel);
     else {
     //may need to adjust some constants later to account for the area of the chute
         return - vel.norm() * (0.5 * (atmospheric_density(pos) * DRAG_COEF_LANDER * (M_PI * pow(LANDER_SIZE, 2)) * vel.abs2()))/(UNLOADED_LANDER_MASS+FUEL_DENSITY*FUEL_CAPACITY);
     }
+}
+
+double alt(vector3d pos) {
+    return pos.abs() - MARS_RADIUS;
 }
 
 void numerical_dynamics (void)
@@ -48,6 +76,7 @@ void numerical_dynamics (void)
   //my approach avoids using arrays to simplify the algorithm but it will cost accuracy for the approximation of velocity
   //NOTE: looping is already built into the code but need it for arrays anyway
   //some VERY DODGY variable usage imbound so I can avoid using lists, optimise at the end with an array
+  //would be much better to use static variables
     if (simulation_time <= 0.1) {
         last_pos = position;
         position = position + velocity * delta_t;
