@@ -74,9 +74,8 @@ void numerical_dynamics (void)
   // INSERT YOUR CODE HERE
   //Note thrust_wrt_world takes no arguments and returns the the current thrust, defined in lander_graphics.cpp
   //my approach avoids using arrays to simplify the algorithm but it will cost accuracy for the approximation of velocity
-  //NOTE: looping is already built into the code but need it for arrays anyway
-  //some VERY DODGY variable usage imbound so I can avoid using lists, optimise at the end with an array
-  //would be much better to use static variables
+  //NOTE: looping is already built into the code
+    static vector3d last_pos, last_pos2;
     if (simulation_time <= 0.1) {
         last_pos = position;
         position = position + velocity * delta_t;
@@ -188,6 +187,15 @@ void initialize_simulation (void)
     break;
 
   case 6:
+      // an areostationary orbit
+      position = vector3d((MARS_RADIUS + 17032000), 0.0,0.0);
+      velocity = vector3d(0.0,1427.7,0.0);
+      orientation = vector3d(0.0, 0.0, 90.0);
+      delta_t = 0.1;
+      parachute_status = NOT_DEPLOYED;
+      stabilized_attitude = true;
+      autopilot_enabled = false;
+      break;
     break;
 
   case 7:
