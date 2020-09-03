@@ -16,6 +16,7 @@
 #include <vector>
 void autopilot (void)
   // Autopilot to adjust the engine throttle, parachute and attitude control
+    //as of 2/8/2020, adjusted to start after the thruster have been fired once
 {   //initialise constants
     float K_h, K_p,e,P_o;
     //adjust by trial and error
@@ -34,6 +35,7 @@ void autopilot (void)
     else {
         throttle = 1;
     }
+
     //following code outputs raw data for investigation and visualisation (Used MATLAB cause quicker)
     ofstream fout;
     fout.open("trajectories.txt", std::ofstream::app);
@@ -59,7 +61,7 @@ vector3d dragacc(vector3d vel,vector3d pos,  parachute_status_t chute) {
         return - vel.norm() * (0.5 * (atmospheric_density(pos) * (DRAG_COEF_LANDER + DRAG_COEF_CHUTE) * (M_PI * pow(LANDER_SIZE, 2)+5*2*LANDER_SIZE) * vel.abs2()))/ (UNLOADED_LANDER_MASS + FUEL_DENSITY * fuel);
     else {
     //may need to adjust some constants later to account for the area of the chute
-        return - vel.norm() * (0.5 * (atmospheric_density(pos) * DRAG_COEF_LANDER * (M_PI * pow(LANDER_SIZE, 2)) * vel.abs2()))/(UNLOADED_LANDER_MASS+FUEL_DENSITY*FUEL_CAPACITY);
+        return - vel.norm() * (0.5 * (atmospheric_density(pos) * DRAG_COEF_LANDER * (M_PI * pow(LANDER_SIZE, 2)) * vel.abs2()))/(UNLOADED_LANDER_MASS+FUEL_DENSITY*fuel);
     }
 }
 
@@ -79,12 +81,12 @@ void numerical_dynamics (void)
     if (simulation_time <= 0.1) {
         last_pos = position;
         position = position + velocity * delta_t;
-        velocity = velocity + delta_t * (gravacc(position) + dragacc(velocity, position, parachute_status) + thrust_wrt_world()/UNLOADED_LANDER_MASS);
+        velocity = velocity + delta_t * (gravacc(position) + dragacc(velocity, position, parachute_status) + thrust_wrt_world()/( UNLOADED_LANDER_MASS + FUEL_DENSITY * fuel));
         last_pos2 = last_pos;
     }
     else {
         last_pos = position;
-        position = 2 * position - last_pos2 + pow(delta_t, 2) * (gravacc(position) + dragacc(velocity, position, parachute_status) + thrust_wrt_world()/UNLOADED_LANDER_MASS);
+        position = 2 * position - last_pos2 + pow(delta_t, 2) * (gravacc(position) + dragacc(velocity, position, parachute_status) + thrust_wrt_world()/( UNLOADED_LANDER_MASS + FUEL_DENSITY * fuel));
         velocity = (position - last_pos)/delta_t;
         last_pos2 = last_pos;
     }
